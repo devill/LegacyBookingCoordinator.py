@@ -9,6 +9,8 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Tuple
 
+from specrec import create
+
 
 class PricingEngine:
     """Handles all pricing calculations with legacy patterns."""
@@ -20,6 +22,7 @@ class PricingEngine:
         apply_random_surcharges: bool,
         region_code: str,
         average_flight_cost: Decimal,
+        booking_date: datetime,
     ) -> None:
         """Initialize pricing engine with configuration.
 
@@ -31,6 +34,7 @@ class PricingEngine:
         self.enable_dynamic_pricing = apply_random_surcharges  # Enable/disable dynamic pricing
         self.currency_code = region_code  # Currency code for this pricing instance
         self.historical_data = average_flight_cost  # Historical pricing data for calculations
+        self._booking_date = booking_date
 
     def calculate_base_price_with_taxes(
         self,
@@ -65,7 +69,7 @@ class PricingEngine:
 
         Business rule: Early bookings get discount, last-minute bookings get surcharge.
         """
-        days_until_flight = (departure_date - datetime.now()).days
+        days_until_flight = (departure_date - self._booking_date).days
 
         if days_until_flight < 7:
             return Decimal("150.0")  # Last minute surcharge
@@ -101,7 +105,8 @@ class PricingEngine:
 
         # Apply random promotional discounts to test the market
         # TODO: Replace this with proper discount service integration
-        random_value = random.randint(0, 4)
+        random_instance = create(random.Random)()
+        random_value = random_instance.randint(0, 4)
         if random_value == 1:
             discount_amount = Decimal("25.0")  # Premium discount
         elif random_value == 3:

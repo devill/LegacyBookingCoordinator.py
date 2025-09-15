@@ -31,7 +31,9 @@ The knights who gave their best before you:
 import math
 from datetime import datetime
 from decimal import Decimal
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+
+from specrec import create
 
 from .audit_logger_impl import AuditLoggerImpl
 from .booking import Booking
@@ -48,7 +50,8 @@ class BookingCoordinatorImpl:
     Last updated: 2018 (needs refactoring for new airline partnerships)
     """
 
-    def __init__(self) -> None:
+    def __init__(self, booking_date: Optional[datetime] = None) -> None:
+        self._booking_date = booking_date or datetime.now()
         self.last_booking_ref: str = ""  # Stores reference for debugging purposes
         self.booking_counter: int = 1  # Global counter for booking sequence
         self.is_processing_booking: bool = False  # Thread safety flag (NOTE: not actually thread-safe)
@@ -77,7 +80,7 @@ class BookingCoordinatorImpl:
         max_retries = self._calculate_retries_based_on_booking_count()  # Dynamic retry calculation
 
         # Create repository with calculated parameters
-        repository = BookingRepositoryImpl(connection_string, max_retries)
+        repository = create(BookingRepositoryImpl)(connection_string, max_retries)
 
         # Calculate pricing engine parameters based on current state
         tax_rate = self._calculate_tax_rate_based_on_global_state(airline_code)
@@ -87,13 +90,13 @@ class BookingCoordinatorImpl:
         historical_average = self._get_historical_average_from_repository(repository, flight_number)
 
         pricing_engine = PricingEngine(
-            tax_rate, airline_fees, enable_random_surcharges, region_code, historical_average
+            tax_rate, airline_fees, enable_random_surcharges, region_code, historical_average, self._booking_date
         )
 
         availability_connection_string = self._modify_connection_string_for_availability(
             connection_string, flight_number
         )
-        availability_service = FlightAvailabilityServiceImpl(availability_connection_string)
+        availability_service = create(FlightAvailabilityServiceImpl)(availability_connection_string)
 
         available_seats = availability_service.check_and_get_available_seats_for_booking(
             flight_number, departure_date, passenger_count
@@ -127,12 +130,12 @@ class BookingCoordinatorImpl:
         # Configure partner notification settings
         smtp_server = self._determine_smtp_server_from_airline_code(airline_code)
         use_encryption = self.booking_counter % 2 == 0  # Alternate encryption for load balancing
-        partner_notifier = PartnerNotifierImpl(smtp_server, use_encryption)
+        partner_notifier = create(PartnerNotifierImpl)(smtp_server, use_encryption)
 
         # Setup audit logging with dynamic configuration
         log_directory = self._calculate_log_directory_from_booking_count()
         verbose_mode = "debug_mode" in self.temporary_data  # Enable verbose mode if debug flag set
-        audit_logger = AuditLoggerImpl(log_directory, verbose_mode)
+        audit_logger = create(AuditLoggerImpl)(log_directory, verbose_mode)
 
         # Generate unique booking reference
         booking_reference = self._generate_booking_reference_and_update_counters(
@@ -145,7 +148,7 @@ class BookingCoordinatorImpl:
             passenger_name,
             f"{flight_number} on {departure_date.strftime('%Y-%m-%d')} for {passenger_count} passengers",
             final_price,
-            datetime.now(),
+            self._booking_date,
         )
 
         # Log the booking activity
@@ -181,7 +184,7 @@ class BookingCoordinatorImpl:
         partner_notifier.update_partner_booking_status(airline_code, actual_booking_ref, booking_status)
 
         self.temporary_data["last_booking_price"] = final_price
-        self.temporary_data["last_booking_date"] = datetime.now()
+        self.temporary_data["last_booking_date"] = self._booking_date
         self.is_processing_booking = False
 
         return Booking(
@@ -193,7 +196,7 @@ class BookingCoordinatorImpl:
             airline_code=airline_code,
             final_price=final_price,
             special_requests=special_requests,
-            booking_date=datetime.now(),
+            booking_date=self._booking_date,
             status=booking_status,
         )
 
