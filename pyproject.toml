@@ -26,7 +26,7 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "specrec-python @ file:///Users/ivett/Documents/git/specrec/specrec-python",
+    "specrec-python>=0.1.1",
 ]
 
 [project.optional-dependencies]
@@ -50,8 +50,6 @@ Issues = "https://github.com/legacy-systems/booking-coordinator/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/legacy_booking"]
 
-[tool.hatch.metadata]
-allow-direct-references = true
 
 [tool.black]
 line-length = 88
