@@ -32,4 +32,4 @@ class TestBookingCoordinator:
         )
 
         # Assert
-        verify(str(result))
+        verify(f"Returns: \"{result}\"")
