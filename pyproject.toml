@@ -25,7 +25,9 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 requires-python = ">=3.8"
-dependencies = []
+dependencies = [
+    "specrec-python>=0.1.1",
+]
 
 [project.optional-dependencies]
 test = [
@@ -47,6 +49,7 @@ Issues = "https://github.com/legacy-systems/booking-coordinator/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/legacy_booking"]
+
 
 [tool.black]
 line-length = 88
