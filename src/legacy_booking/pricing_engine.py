@@ -9,7 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Tuple
 
-from specrec import create
+from global_object_factory import create
 
 
 class PricingEngine:

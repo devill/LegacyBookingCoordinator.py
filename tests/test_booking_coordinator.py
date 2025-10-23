@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 from approvaltests import verify
-from specrec import set_one, context
+from global_object_factory import set_one, context
 
 from legacy_booking.audit_logger import AuditLogger
 from legacy_booking.audit_logger_impl import AuditLoggerImpl

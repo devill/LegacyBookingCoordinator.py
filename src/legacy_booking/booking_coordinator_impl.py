@@ -33,7 +33,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Any, Optional
 
-from specrec import create
+from global_object_factory import create
 
 from .audit_logger_impl import AuditLoggerImpl
 from .booking import Booking
