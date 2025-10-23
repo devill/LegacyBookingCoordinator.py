@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from approvaltests import verify
+from global_object_factory import set_one, context
 
 from legacy_booking.booking_coordinator_impl import BookingCoordinatorImpl
 

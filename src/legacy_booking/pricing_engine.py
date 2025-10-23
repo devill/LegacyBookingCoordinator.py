@@ -9,6 +9,8 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Tuple
 
+from global_object_factory import create
+
 
 class PricingEngine:
     """Handles all pricing calculations with legacy patterns."""
